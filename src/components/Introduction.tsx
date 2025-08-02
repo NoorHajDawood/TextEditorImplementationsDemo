@@ -33,34 +33,49 @@ export const Introduction: React.FC = () => {
                  <div className="intro-section">
            <h3>The Three Implementations:</h3>
            <p>Click on each card to reveal what's inside...</p>
-           <div className="implementation-previews">
-             <div 
-               className={`preview-card ${revealedCards.has('array') ? 'revealed' : 'blurred'}`}
-               onClick={() => handleCardClick('array')}
-             >
-               <h4>Array-Based Editor</h4>
-               <p>Simple but inefficient. Watch how characters shift when you insert in the middle!</p>
-               <div className="complexity">O(n) insertions/deletions</div>
-             </div>
-             
-             <div 
-               className={`preview-card ${revealedCards.has('linkedlist') ? 'revealed' : 'blurred'}`}
-               onClick={() => handleCardClick('linkedlist')}
-             >
-               <h4>Linked List Editor</h4>
-               <p>Fast insertions but uses more memory. See how nodes connect with pointers!</p>
-               <div className="complexity">O(1) insertions/deletions</div>
-             </div>
-             
-             <div 
-               className={`preview-card ${revealedCards.has('gapbuffer') ? 'revealed' : 'blurred'}`}
-               onClick={() => handleCardClick('gapbuffer')}
-             >
-               <h4>Gap Buffer Editor</h4>
-               <p>The best of both worlds! Efficient and memory-friendly.</p>
-               <div className="complexity">O(1) insertions/deletions</div>
-             </div>
-           </div>
+                       <div className="implementation-previews">
+              <div className="card-container">
+                <div 
+                  className={`preview-card ${revealedCards.has('array') ? 'revealed' : 'blurred'}`}
+                  onClick={() => handleCardClick('array')}
+                >
+                  <h4>Array-Based Editor</h4>
+                  <p>Simple but inefficient. Watch how characters shift when you insert in the middle!</p>
+                  <div className="complexity">O(n) insertions/deletions</div>
+                </div>
+                {!revealedCards.has('array') && (
+                  <div className="reveal-tooltip">Click to reveal</div>
+                )}
+              </div>
+              
+              <div className="card-container">
+                <div 
+                  className={`preview-card ${revealedCards.has('linkedlist') ? 'revealed' : 'blurred'}`}
+                  onClick={() => handleCardClick('linkedlist')}
+                >
+                  <h4>Linked List Editor</h4>
+                  <p>Fast insertions but uses more memory. See how nodes connect with pointers!</p>
+                  <div className="complexity">O(1) insertions/deletions</div>
+                </div>
+                {!revealedCards.has('linkedlist') && (
+                  <div className="reveal-tooltip">Click to reveal</div>
+                )}
+              </div>
+              
+              <div className="card-container">
+                <div 
+                  className={`preview-card ${revealedCards.has('gapbuffer') ? 'revealed' : 'blurred'}`}
+                  onClick={() => handleCardClick('gapbuffer')}
+                >
+                  <h4>Gap Buffer Editor</h4>
+                  <p>The best of both worlds! Efficient and memory-friendly.</p>
+                  <div className="complexity">O(1) insertions/deletions</div>
+                </div>
+                {!revealedCards.has('gapbuffer') && (
+                  <div className="reveal-tooltip">Click to reveal</div>
+                )}
+              </div>
+            </div>
          </div>
 
         <div className="intro-section">

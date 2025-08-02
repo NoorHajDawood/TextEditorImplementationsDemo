@@ -170,6 +170,10 @@ body {
   margin-top: 20px;
 }
 
+.card-container {
+  position: relative;
+}
+
 .preview-card {
   background: #f7fafc;
   border: 2px solid #e2e8f0;
@@ -179,6 +183,10 @@ body {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .preview-card:hover {
@@ -203,8 +211,7 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-.preview-card.blurred::before {
-  content: "Click to reveal";
+.reveal-tooltip {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -215,13 +222,13 @@ body {
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  z-index: 10;
+  z-index: 20;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.preview-card.blurred:hover::before {
+.card-container:hover .reveal-tooltip {
   opacity: 1;
 }
 
