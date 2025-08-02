@@ -78,6 +78,40 @@ body {
   border-bottom-color: #667eea;
 }
 
+/* Masked tab titles */
+.tab-button {
+  position: relative;
+}
+
+.tab-button .tab-title {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tab-button:hover .tab-title,
+.tab-button.active .tab-title,
+.tab-button.visited .tab-title {
+  opacity: 1;
+}
+
+.tab-button .tab-mask {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  font-weight: bold;
+  color: #6c757d;
+  pointer-events: none;
+}
+
+.tab-button:hover .tab-mask,
+.tab-button.active .tab-mask,
+.tab-button.visited .tab-mask {
+  opacity: 0;
+}
+
 .tab-content {
   padding: 25px;
 }
