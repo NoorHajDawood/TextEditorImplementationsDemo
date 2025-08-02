@@ -120,6 +120,53 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     setIsAnimating(false)
   }, [editor, updateDisplay])
 
+  const animateLinkedListInsertion = useCallback(async (char: string) => {
+    setIsAnimating(true)
+    setOperationType('insert')
+    setInputValue('')
+    
+    const currentOperations = editor.getOperations()
+    const currentCursor = editor.getCursor()
+    
+    // Find the current node and animate characters shifting within it
+    let nodeStartIndex = -1
+    let nodeEndIndex = -1
+    let bracketCount = 0
+    
+    // Find the node containing the cursor
+    for (let i = 0; i < currentOperations.length; i++) {
+      if (currentOperations[i] === '[') {
+        bracketCount++
+        if (bracketCount === 1) {
+          nodeStartIndex = i + 1 // Start after opening bracket
+        }
+      } else if (currentOperations[i] === ']') {
+        bracketCount--
+        if (bracketCount === 0) {
+          nodeEndIndex = i - 1 // End before closing bracket
+          break
+        }
+      }
+    }
+    
+    // Animate characters shifting within the current node
+    if (nodeStartIndex !== -1 && nodeEndIndex !== -1) {
+      for (let i = currentCursor; i <= nodeEndIndex; i++) {
+        if (currentOperations[i] && currentOperations[i] !== '[' && currentOperations[i] !== ']' && currentOperations[i] !== '→') {
+          setShiftingIndex(i)
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+    }
+    
+    editor.insert(char)
+    setShiftingIndex(null)
+    setOperationType(null)
+    
+    updateDisplay(`Inserted '${char}' (characters shifted within node)`)
+    setIsAnimating(false)
+  }, [editor, updateDisplay])
+
   const animateArrayDeletion = useCallback(async () => {
     setIsAnimating(true)
     setOperationType('delete')
@@ -151,6 +198,8 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     if (inputValue && !isAnimating) {
       if (type === 'array') {
         animateArrayInsertion(inputValue)
+      } else if (type === 'linkedlist') {
+        animateLinkedListInsertion(inputValue)
       } else if (type === 'gapbuffer') {
         // Check if gap is exhausted before deciding to animate
         let currentGapSize = 10
@@ -175,7 +224,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
         updateDisplay(`Inserted '${inputValue}'`)
       }
     }
-  }, [inputValue, isAnimating, type, editor, updateDisplay, animateArrayInsertion, animateGapBufferInsertion])
+  }, [inputValue, isAnimating, type, editor, updateDisplay, animateArrayInsertion, animateLinkedListInsertion, animateGapBufferInsertion])
 
   const handleDelete = useCallback(() => {
     if (!isAnimating) {

@@ -65,21 +65,58 @@ export class ArrayBasedEditor implements ITextEditor {
   }
 }
 
-// 2. Linked List-based text editor
+// 2. Linked List-based text editor with multi-character nodes
 export class ListNode {
-  char: string
+  chars: string[] = []
   next: ListNode | null = null
   prev: ListNode | null = null
+  private maxChars: number = 10 // Maximum characters per node
 
-  constructor(char: string) {
-    this.char = char
+  constructor(initialChars: string = '') {
+    this.chars = initialChars.split('')
+  }
+
+  addChar(char: string): boolean {
+    if (this.chars.length < this.maxChars) {
+      this.chars.push(char)
+      return true
+    }
+    return false // Node is full
+  }
+
+  insertCharAt(char: string, index: number): void {
+    this.chars.splice(index, 0, char)
+  }
+
+  deleteCharAt(index: number): string | null {
+    if (index >= 0 && index < this.chars.length) {
+      return this.chars.splice(index, 1)[0]
+    }
+    return null
+  }
+
+  isFull(): boolean {
+    return this.chars.length >= this.maxChars
+  }
+
+  isEmpty(): boolean {
+    return this.chars.length === 0
+  }
+
+  getLength(): number {
+    return this.chars.length
+  }
+
+  getText(): string {
+    return this.chars.join('')
   }
 }
 
 export class LinkedListEditor implements IMemoryTrackedEditor {
   private head: ListNode | null = null
   private tail: ListNode | null = null
-  private cursor: ListNode | null = null
+  private cursorNode: ListNode | null = null
+  private cursorIndex: number = 0 // Index within the current node
   private size: number = 0
 
   constructor(initialText: string = '') {
@@ -90,63 +127,145 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     }
   }
 
+  private createNode(): ListNode {
+    return new ListNode()
+  }
+
   insert(char: string): void {
-    const newNode = new ListNode(char)
-    
     if (!this.head) {
-      this.head = newNode
-      this.tail = newNode
-      this.cursor = newNode
-    } else if (!this.cursor) {
-      // Insert at beginning
-      newNode.next = this.head
-      this.head.prev = newNode
-      this.head = newNode
-      this.cursor = newNode
-    } else {
-      // Insert after cursor
-      newNode.next = this.cursor.next
-      newNode.prev = this.cursor
-      if (this.cursor.next) {
-        this.cursor.next.prev = newNode
-      } else {
-        this.tail = newNode
-      }
-      this.cursor.next = newNode
-      this.cursor = newNode
+      // First node
+      this.head = this.createNode()
+      this.tail = this.head
+      this.cursorNode = this.head
+      this.cursorIndex = 0
     }
-    this.size++
+
+    if (!this.cursorNode) {
+      // Cursor at beginning, create new head
+      const newNode = this.createNode()
+      newNode.next = this.head
+      if (this.head) {
+        this.head.prev = newNode
+      }
+      this.head = newNode
+      this.cursorNode = newNode
+      this.cursorIndex = 0
+    }
+
+    // Try to insert in current node
+    if (!this.cursorNode.isFull()) {
+      // Insert at cursor position within node
+      this.cursorNode.insertCharAt(char, this.cursorIndex)
+      this.cursorIndex++
+      this.size++
+    } else {
+      // Current node is full, need to split or create new node
+      if (this.cursorIndex === this.cursorNode.getLength()) {
+        // At end of node, create new node
+        const newNode = this.createNode()
+        newNode.addChar(char)
+        
+        // Link new node
+        newNode.next = this.cursorNode.next
+        newNode.prev = this.cursorNode
+        if (this.cursorNode.next) {
+          this.cursorNode.next.prev = newNode
+        } else {
+          this.tail = newNode
+        }
+        this.cursorNode.next = newNode
+        
+        // Move cursor to new node
+        this.cursorNode = newNode
+        this.cursorIndex = 1
+        this.size++
+      } else {
+        // Need to split the current node
+        const newNode = this.createNode()
+        const charsToMove = this.cursorNode.chars.slice(this.cursorIndex)
+        this.cursorNode.chars = this.cursorNode.chars.slice(0, this.cursorIndex)
+        
+        // Add new character and remaining chars to new node
+        newNode.chars = [char, ...charsToMove]
+        
+        // Link new node
+        newNode.next = this.cursorNode.next
+        newNode.prev = this.cursorNode
+        if (this.cursorNode.next) {
+          this.cursorNode.next.prev = newNode
+        } else {
+          this.tail = newNode
+        }
+        this.cursorNode.next = newNode
+        
+        // Move cursor to new node
+        this.cursorNode = newNode
+        this.cursorIndex = 1
+        this.size++
+      }
+    }
   }
 
   delete(): void {
-    if (!this.cursor) return
-    
-    if (this.cursor.prev) {
-      this.cursor.prev.next = this.cursor.next
-    } else {
-      this.head = this.cursor.next
+    if (!this.cursorNode || this.cursorIndex === 0) {
+      // Try to move to previous node
+      if (this.cursorNode && this.cursorNode.prev) {
+        this.cursorNode = this.cursorNode.prev
+        this.cursorIndex = this.cursorNode.getLength()
+        this.delete()
+      }
+      return
     }
-    
-    if (this.cursor.next) {
-      this.cursor.next.prev = this.cursor.prev
-    } else {
-      this.tail = this.cursor.prev
+
+    const deletedChar = this.cursorNode.deleteCharAt(this.cursorIndex - 1)
+    if (deletedChar) {
+      this.cursorIndex--
+      this.size--
+      
+      // If node becomes empty and it's not the only node, remove it
+      if (this.cursorNode.isEmpty() && this.head !== this.tail) {
+        if (this.cursorNode.prev) {
+          this.cursorNode.prev.next = this.cursorNode.next
+        } else {
+          this.head = this.cursorNode.next
+        }
+        
+        if (this.cursorNode.next) {
+          this.cursorNode.next.prev = this.cursorNode.prev
+        } else {
+          this.tail = this.cursorNode.prev
+        }
+        
+        // Move cursor to previous node
+        if (this.cursorNode.prev) {
+          this.cursorNode = this.cursorNode.prev
+          this.cursorIndex = this.cursorNode.getLength()
+        } else if (this.cursorNode.next) {
+          this.cursorNode = this.cursorNode.next
+          this.cursorIndex = 0
+        } else {
+          this.cursorNode = null
+          this.cursorIndex = 0
+        }
+      }
     }
-    
-    const prevNode = this.cursor.prev
-    this.cursor = prevNode
-    this.size--
   }
 
   moveLeft(): void {
-    if (this.cursor && this.cursor.prev) {
-      this.cursor = this.cursor.prev
+    if (this.cursorIndex > 0) {
+      this.cursorIndex--
+    } else if (this.cursorNode && this.cursorNode.prev) {
+      this.cursorNode = this.cursorNode.prev
+      this.cursorIndex = this.cursorNode.getLength()
     }
   }
 
   moveRight(): void {
-    if (this.cursor && this.cursor.next) {
-      this.cursor = this.cursor.next
+    if (this.cursorNode && this.cursorIndex < this.cursorNode.getLength()) {
+      this.cursorIndex++
+    } else if (this.cursorNode && this.cursorNode.next) {
+      this.cursorNode = this.cursorNode.next
+      this.cursorIndex = 0
     }
   }
 
@@ -154,7 +273,7 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     let result = ''
     let current = this.head
     while (current) {
-      result += current.char
+      result += current.getText()
       current = current.next
     }
     return result
@@ -163,10 +282,16 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
   getCursor(): number {
     let count = 0
     let current = this.head
-    while (current && current !== this.cursor) {
-      count++
+    
+    while (current && current !== this.cursorNode) {
+      count += current.getLength()
       current = current.next
     }
+    
+    if (this.cursorNode) {
+      count += this.cursorIndex
+    }
+    
     return count
   }
 
@@ -175,11 +300,13 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     let current = this.head
     
     while (current) {
-      // Add the character (with cursor highlighting)
-      if (current === this.cursor) {
-        result.push(`[${current.char}]`)
-      } else {
-        result.push(current.char)
+      // Add characters in the node
+      for (let i = 0; i < current.chars.length; i++) {
+        if (current === this.cursorNode && i === this.cursorIndex) {
+          result.push(`[${current.chars[i]}]`) // Cursor position
+        } else {
+          result.push(current.chars[i])
+        }
       }
       
       // Add pointer to next node (if not the last node)
@@ -202,13 +329,20 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
   }
 
   getMemoryUsage(): number {
-    return this.size * 3 // Rough estimate: char + next + prev pointers
+    let nodeCount = 0
+    let current = this.head
+    while (current) {
+      nodeCount++
+      current = current.next
+    }
+    return this.size + (nodeCount * 2) // chars + next/prev pointers per node
   }
 
   clear(): void {
     this.head = null
     this.tail = null
-    this.cursor = null
+    this.cursorNode = null
+    this.cursorIndex = 0
     this.size = 0
   }
 }

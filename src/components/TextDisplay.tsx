@@ -24,25 +24,50 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
   gapUsed,
   onKeyDown
 }) => {
+  // Calculate node colors for linked list
+  const getNodeColor = (index: number) => {
+    if (type !== 'linkedlist') return null
+    
+    let nodeIndex = 0
+    let charCount = 0
+    
+    for (let i = 0; i < operations.length && i < index; i++) {
+      if (operations[i] === '→') {
+        nodeIndex++
+        charCount = 0
+      } else if (operations[i] && !operations[i].startsWith('[') && operations[i] !== '_' && operations[i] !== '→') {
+        charCount++
+      }
+    }
+    
+         // Color cycling: 8 different colors
+     const colors = ['node-color-1', 'node-color-2', 'node-color-3', 'node-color-4', 'node-color-5', 'node-color-6', 'node-color-7', 'node-color-8']
+     return colors[nodeIndex % colors.length]
+  }
+
   return (
     <div className="text-display" tabIndex={0} onKeyDown={onKeyDown}>
       <div className="text-content">
-                 {operations.map((op, index) => (
-           <span 
-             key={index} 
-             className={op && op.startsWith('[') ? 'cursor' : 'char'}
-             data-gap={type === 'gapbuffer' && op === '_' && !isAnimating && gapSize && gapUsed !== undefined && index >= cursor && index < cursor + (gapSize - gapUsed) ? 'true' : 'false'}
-             data-empty={op === '_' ? 'true' : 'false'}
-             data-separator={op === '|' ? 'true' : 'false'}
-             data-arrow={op === '→' ? 'true' : 'false'}
-             data-pointer={type === 'linkedlist' && op === '→' ? 'true' : 'false'}
-             data-node={type === 'linkedlist' && op && !op.startsWith('[') && op !== '_' && op !== '→' ? 'true' : 'false'}
-             data-shifting={shiftingIndex === index ? 'true' : 'false'}
-             data-operation={operationType}
-           >
-             {op || '_'}
-           </span>
-         ))}
+                 {operations.map((op, index) => {
+           const nodeColor = getNodeColor(index)
+           return (
+             <span 
+               key={index} 
+               className={`${op && op.startsWith('[') ? 'cursor' : 'char'} ${nodeColor || ''}`}
+               data-gap={type === 'gapbuffer' && op === '_' && !isAnimating && gapSize && gapUsed !== undefined && index >= cursor && index < cursor + (gapSize - gapUsed) ? 'true' : 'false'}
+               data-empty={op === '_' ? 'true' : 'false'}
+               data-separator={op === '|' ? 'true' : 'false'}
+               data-arrow={op === '→' ? 'true' : 'false'}
+               data-pointer={type === 'linkedlist' && op === '→' ? 'true' : 'false'}
+               data-node={type === 'linkedlist' && op && !op.startsWith('[') && op !== '_' && op !== '→' && op !== '[' && op !== ']' ? 'true' : 'false'}
+               data-node-shifting={type === 'linkedlist' && shiftingIndex === index ? 'true' : 'false'}
+               data-shifting={shiftingIndex === index ? 'true' : 'false'}
+               data-operation={operationType}
+             >
+               {op || '_'}
+             </span>
+           )
+         })}
       </div>
       
       {type === 'array' && (
@@ -61,11 +86,11 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
              {type === 'linkedlist' && (
          <div className="linkedlist-indicator">
            <small>
-             Linked List: Characters are connected by pointers (→). 
+             Linked List: Multi-character nodes (color-coded) connected by pointers (→). 
              {shiftingIndex !== null ? (
-               <span className="animating-text"> No shifting needed - just update pointers!</span>
+               <span className="animating-text"> Characters shifting within nodes (like arrays), pointers update between nodes!</span>
              ) : (
-               ' Insertions/deletions only update pointers, no character shifting.'
+               ' Insertions/deletions shift characters within nodes, create/split nodes when needed.'
              )}
            </small>
          </div>
