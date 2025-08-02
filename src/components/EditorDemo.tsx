@@ -35,6 +35,7 @@ export const EditorDemo: React.FC<EditorDemoProps> = ({
     operationType,
     gapSize,
     gapUsed,
+    detailedOperations,
     setInputValue,
     handleInsert,
     handleDelete,
@@ -87,6 +88,9 @@ export const EditorDemo: React.FC<EditorDemoProps> = ({
           lastOperation={lastOperation}
           memoryUsage={memoryUsage}
           type={type}
+          gapSize={gapSize}
+          gapUsed={gapUsed}
+          detailedOperations={detailedOperations}
         />
         
         <ImplementationDetails type={type} />

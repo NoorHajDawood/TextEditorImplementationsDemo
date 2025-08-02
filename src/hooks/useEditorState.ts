@@ -13,13 +13,33 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
   const [operations, setOperations] = useState<string[]>([])
   const [memoryUsage, setMemoryUsage] = useState(0)
   const [inputValue, setInputValue] = useState('')
-  const [operationCount, setOperationCount] = useState(0)
-  const [lastOperation, setLastOperation] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
   const [shiftingIndex, setShiftingIndex] = useState<number | null>(null)
   const [operationType, setOperationType] = useState<'insert' | 'delete' | null>(null)
   const [gapSize, setGapSize] = useState<number>(10)
   const [gapUsed, setGapUsed] = useState<number>(0)
+  
+  // Enhanced operation tracking
+  const [detailedOperations, setDetailedOperations] = useState<Array<{
+    type: 'insert' | 'delete' | 'shift' | 'move' | 'clear' | 'preset'
+    description: string
+    timestamp: number
+    characterCount?: number
+    shiftCount?: number
+  }>>([])
+
+  const addOperation = useCallback((operation: {
+    type: 'insert' | 'delete' | 'shift' | 'move' | 'clear' | 'preset'
+    description: string
+    characterCount?: number
+    shiftCount?: number
+  }) => {
+    const newOperation = {
+      ...operation,
+      timestamp: Date.now()
+    }
+    setDetailedOperations(prev => [...prev, newOperation])
+  }, [])
 
   const updateDisplay = useCallback((operation?: string) => {
     const currentText = editor.getText()
@@ -41,11 +61,6 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       setGapSize(gapInfo.gapSize)
       setGapUsed(gapInfo.gapUsed)
     }
-    
-    if (operation) {
-      setLastOperation(operation) 
-      setOperationCount(prev => prev + 1)
-    }
   }, [editor, setTextState])
 
   const animateArrayInsertion = useCallback(async (char: string) => {
@@ -55,10 +70,16 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     
     const currentContent = editor.getText()
     const currentCursor = editor.getCursor()
+    const shiftCount = currentContent.length - currentCursor
     
-    // Show the shifting animation
+    // Count each shift operation
     for (let i = currentContent.length; i > currentCursor; i--) {
       setShiftingIndex(i)
+      addOperation({
+        type: 'shift',
+        description: `Shifted character at position ${i}`,
+        shiftCount: 1
+      })
       await new Promise(resolve => setTimeout(resolve, 100))
     }
     
@@ -66,9 +87,15 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     setShiftingIndex(null)
     setOperationType(null)
     
-    updateDisplay(`Inserted '${char}' (with shifting)`)
+    addOperation({
+      type: 'insert',
+      description: `Inserted '${char}' (with ${shiftCount} shifts)`,
+      characterCount: 1,
+      shiftCount
+    })
+    updateDisplay()
     setIsAnimating(false)
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const animateGapBufferInsertion = useCallback(async (char: string) => {
     setIsAnimating(true)
@@ -94,12 +121,19 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     if (currentGapUsed >= currentGapSize) {
       // Gap is exhausted, show shifting animation
       const gapStartIndex = currentCursor
+      let shiftCount = 0
       
       // Animate characters shifting to make room in the gap
       // Show shifting animation for characters that need to move
       for (let i = gapStartIndex; i < currentOperations.length; i++) {
         if (currentOperations[i] !== '_') {
           setShiftingIndex(i)
+          addOperation({
+            type: 'shift',
+            description: `Shifted character at position ${i} (gap expansion)`,
+            shiftCount: 1
+          })
+          shiftCount++
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
@@ -108,17 +142,29 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       setShiftingIndex(null)
       setOperationType(null)
       
-      updateDisplay(`Inserted '${char}' (gap expanded and shifted)`)
+      addOperation({
+        type: 'insert',
+        description: `Inserted '${char}' (gap expanded with ${shiftCount} shifts)`,
+        characterCount: 1,
+        shiftCount
+      })
+      updateDisplay()
     } else {
       // Gap has space, no shifting needed
       editor.insert(char)
       setOperationType(null)
       
-      updateDisplay(`Inserted '${char}' (no shifting needed)`)
+      addOperation({
+        type: 'insert',
+        description: `Inserted '${char}' (no shifting needed)`,
+        characterCount: 1,
+        shiftCount: 0
+      })
+      updateDisplay()
     }
     
     setIsAnimating(false)
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const animateLinkedListInsertion = useCallback(async (char: string) => {
     setIsAnimating(true)
@@ -149,11 +195,18 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       }
     }
     
+    let shiftCount = 0
     // Animate characters shifting within the current node
     if (nodeStartIndex !== -1 && nodeEndIndex !== -1) {
       for (let i = currentCursor; i <= nodeEndIndex; i++) {
         if (currentOperations[i] && currentOperations[i] !== '[' && currentOperations[i] !== ']' && currentOperations[i] !== '→') {
           setShiftingIndex(i)
+          addOperation({
+            type: 'shift',
+            description: `Shifted character within node at position ${i}`,
+            shiftCount: 1
+          })
+          shiftCount++
           await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
@@ -163,9 +216,15 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     setShiftingIndex(null)
     setOperationType(null)
     
-    updateDisplay(`Inserted '${char}' (characters shifted within node)`)
+    addOperation({
+      type: 'insert',
+      description: `Inserted '${char}' (${shiftCount} shifts within node)`,
+      characterCount: 1,
+      shiftCount
+    })
+    updateDisplay()
     setIsAnimating(false)
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const animateArrayDeletion = useCallback(async () => {
     setIsAnimating(true)
@@ -175,9 +234,16 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     const currentCursor = editor.getCursor()
     
     if (currentCursor > 0) {
+      const shiftCount = currentContent.length - currentCursor
+      
       // Show the shifting animation from left to right
       for (let i = currentCursor; i < currentContent.length; i++) {
         setShiftingIndex(i)
+        addOperation({
+          type: 'shift',
+          description: `Shifted character at position ${i} (deletion)`,
+          shiftCount: 1
+        })
         await new Promise(resolve => setTimeout(resolve, 100))
       }
       
@@ -185,14 +251,26 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       setShiftingIndex(null)
       setOperationType(null)
       
-      updateDisplay('Deleted character (with shifting)')
+      addOperation({
+        type: 'delete',
+        description: `Deleted character (with ${shiftCount} shifts)`,
+        characterCount: 1,
+        shiftCount
+      })
+      updateDisplay()
     } else {
       setOperationType(null)
-      updateDisplay('Cannot delete at beginning')
+      addOperation({
+        type: 'delete',
+        description: 'Cannot delete at beginning',
+        characterCount: 0,
+        shiftCount: 0
+      })
+      updateDisplay()
     }
     
     setIsAnimating(false)
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const animateArrayDeletionRight = useCallback(async () => {
     setIsAnimating(true)
@@ -202,9 +280,16 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     const currentCursor = editor.getCursor()
     
     if (currentCursor < currentContent.length) {
+      const shiftCount = currentContent.length - currentCursor - 1
+      
       // Show the shifting animation from right to left
       for (let i = currentContent.length - 1; i >= currentCursor; i--) {
         setShiftingIndex(i)
+        addOperation({
+          type: 'shift',
+          description: `Shifted character at position ${i} (right deletion)`,
+          shiftCount: 1
+        })
         await new Promise(resolve => setTimeout(resolve, 100))
       }
       
@@ -212,14 +297,26 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       setShiftingIndex(null)
       setOperationType(null)
       
-      updateDisplay('Deleted character to the right (with shifting)')
+      addOperation({
+        type: 'delete',
+        description: `Deleted character to the right (with ${shiftCount} shifts)`,
+        characterCount: 1,
+        shiftCount
+      })
+      updateDisplay()
     } else {
       setOperationType(null)
-      updateDisplay('Cannot delete at end')
+      addOperation({
+        type: 'delete',
+        description: 'Cannot delete at end',
+        characterCount: 0,
+        shiftCount: 0
+      })
+      updateDisplay()
     }
     
     setIsAnimating(false)
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const handleInsert = useCallback(() => {
     if (inputValue && !isAnimating) {
@@ -243,15 +340,27 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
         } else {
           editor.insert(inputValue)
           setInputValue('')
-          updateDisplay(`Inserted '${inputValue}' (no shifting needed)`)
+          addOperation({
+            type: 'insert',
+            description: `Inserted '${inputValue}' (no shifting needed)`,
+            characterCount: 1,
+            shiftCount: 0
+          })
+          updateDisplay()
         }
       } else {
         editor.insert(inputValue)
         setInputValue('')
-        updateDisplay(`Inserted '${inputValue}'`)
+        addOperation({
+          type: 'insert',
+          description: `Inserted '${inputValue}'`,
+          characterCount: 1,
+          shiftCount: 0
+        })
+        updateDisplay()
       }
     }
-  }, [inputValue, isAnimating, type, editor, updateDisplay, animateArrayInsertion, animateLinkedListInsertion, animateGapBufferInsertion])
+  }, [inputValue, isAnimating, type, editor, updateDisplay, animateArrayInsertion, animateLinkedListInsertion, animateGapBufferInsertion, addOperation])
 
   const handleDelete = useCallback(() => {
     if (!isAnimating) {
@@ -259,10 +368,16 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
         animateArrayDeletion()
       } else {
         editor.delete()
-        updateDisplay('Deleted character')
+        addOperation({
+          type: 'delete',
+          description: 'Deleted character',
+          characterCount: 1,
+          shiftCount: 0
+        })
+        updateDisplay()
       }
     }
-  }, [isAnimating, type, editor, updateDisplay, animateArrayDeletion])
+  }, [isAnimating, type, editor, updateDisplay, animateArrayDeletion, addOperation])
 
   const handleDeleteRight = useCallback(() => {
     if (!isAnimating) {
@@ -270,36 +385,67 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
         animateArrayDeletionRight()
       } else {
         editor.deleteRight()
-        updateDisplay('Deleted character to the right')
+        addOperation({
+          type: 'delete',
+          description: 'Deleted character to the right',
+          characterCount: 1,
+          shiftCount: 0
+        })
+        updateDisplay()
       }
     }
-  }, [isAnimating, type, editor, updateDisplay, animateArrayDeletionRight])
+  }, [isAnimating, type, editor, updateDisplay, animateArrayDeletionRight, addOperation])
 
   const handleMoveLeft = useCallback(() => {
     editor.moveLeft()
-    updateDisplay('Moved cursor left')
-  }, [editor, updateDisplay])
+    addOperation({
+      type: 'move',
+      description: 'Moved cursor left',
+      characterCount: 0,
+      shiftCount: 0
+    })
+    updateDisplay()
+  }, [editor, updateDisplay, addOperation])
 
   const handleMoveRight = useCallback(() => {
     editor.moveRight()
-    updateDisplay('Moved cursor right')
-  }, [editor, updateDisplay])
+    addOperation({
+      type: 'move',
+      description: 'Moved cursor right',
+      characterCount: 0,
+      shiftCount: 0
+    })
+    updateDisplay()
+  }, [editor, updateDisplay, addOperation])
 
   const handleClearText = useCallback(() => {
     if ('clear' in editor) {
+      const charCount = editor.getText().length
       editor.clear()
-      updateDisplay('Cleared all text')
+      addOperation({
+        type: 'clear',
+        description: 'Cleared all text',
+        characterCount: charCount,
+        shiftCount: 0
+      })
+      updateDisplay()
     }
-  }, [editor, updateDisplay])
+  }, [editor, updateDisplay, addOperation])
 
   const handleInsertPreset = useCallback((presetText: string) => {
     if (!isAnimating) {
       for (const char of presetText) {
         editor.insert(char)
       }
-      updateDisplay(`Inserted preset text: "${presetText}"`)
+      addOperation({
+        type: 'preset',
+        description: `Inserted preset text: "${presetText}"`,
+        characterCount: presetText.length,
+        shiftCount: 0
+      })
+      updateDisplay()
     }
-  }, [isAnimating, editor, updateDisplay])
+  }, [isAnimating, editor, updateDisplay, addOperation])
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     // Prevent default behavior for keys that might cause scrolling
@@ -345,14 +491,26 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
           animateGapBufferInsertion(e.key)
         } else {
           editor.insert(e.key)
-          updateDisplay(`Inserted '${e.key}' (no shifting needed)`)
+          addOperation({
+            type: 'insert',
+            description: `Inserted '${e.key}' (no shifting needed)`,
+            characterCount: 1,
+            shiftCount: 0
+          })
+          updateDisplay()
         }
       } else if (!isAnimating) {
         editor.insert(e.key)
-        updateDisplay(`Inserted '${e.key}'`)
+        addOperation({
+          type: 'insert',
+          description: `Inserted '${e.key}'`,
+          characterCount: 1,
+          shiftCount: 0
+        })
+        updateDisplay()
       }
     }
-  }, [type, isAnimating, handleInsert, handleDelete, handleDeleteRight, handleMoveLeft, handleMoveRight, editor, updateDisplay, animateArrayInsertion, animateArrayDeletion, animateArrayDeletionRight, animateGapBufferInsertion])
+  }, [type, isAnimating, handleInsert, handleDelete, handleDeleteRight, handleMoveLeft, handleMoveRight, editor, updateDisplay, animateArrayInsertion, animateArrayDeletion, animateArrayDeletionRight, animateGapBufferInsertion, addOperation])
 
   return {
     // State
@@ -360,11 +518,12 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     operations,
     memoryUsage,
     inputValue,
-    operationCount,
-    lastOperation,
+    operationCount: editor.getOperationCount(),
+    lastOperation: editor.getLastOperation(),
     isAnimating,
     shiftingIndex,
     operationType,
+    detailedOperations,
     
     // Setters
     setInputValue,

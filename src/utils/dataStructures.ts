@@ -4,6 +4,8 @@ import type { ITextEditor, IMemoryTrackedEditor } from '../types'
 export class ArrayBasedEditor implements ITextEditor {
   private content: string[] = []
   private cursor: number = 0
+  private operationCount: number = 0
+  private lastOperation: string = ''
 
   constructor(initialText: string = '') {
     this.content = initialText.split('')
@@ -12,30 +14,35 @@ export class ArrayBasedEditor implements ITextEditor {
   insert(char: string): void {
     this.content.splice(this.cursor, 0, char)
     this.cursor++
+    this.addOperation(`Inserted '${char}'`)
   }
 
   delete(): void {
     if (this.cursor > 0) {
       this.content.splice(this.cursor - 1, 1)
       this.cursor--
+      this.addOperation('Deleted character')
     }
   }
 
   deleteRight(): void {
     if (this.cursor < this.content.length) {
       this.content.splice(this.cursor, 1)
+      this.addOperation('Deleted character to the right')
     }
   }
 
   moveLeft(): void {
     if (this.cursor > 0) {
       this.cursor--
+      this.addOperation('Moved cursor left')
     }
   }
 
   moveRight(): void {
     if (this.cursor < this.content.length) {
       this.cursor++
+      this.addOperation('Moved cursor right')
     }
   }
 
@@ -68,6 +75,26 @@ export class ArrayBasedEditor implements ITextEditor {
   clear(): void {
     this.content = []
     this.cursor = 0
+    this.operationCount++
+    this.lastOperation = 'Cleared all text'
+  }
+
+  getOperationCount(): number {
+    return this.operationCount
+  }
+
+  getLastOperation(): string {
+    return this.lastOperation
+  }
+
+  resetOperationTracking(): void {
+    this.operationCount = 0
+    this.lastOperation = ''
+  }
+
+  private addOperation(description: string): void {
+    this.operationCount++
+    this.lastOperation = description
   }
 }
 
@@ -76,7 +103,7 @@ export class ListNode {
   chars: string[] = []
   next: ListNode | null = null
   prev: ListNode | null = null
-  private maxChars: number = 10 // Maximum characters per node
+  private maxChars: number = 5 // Maximum characters per node
 
   constructor(initialChars: string = '') {
     this.chars = initialChars.split('')
@@ -124,6 +151,8 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
   private cursorNode: ListNode | null = null
   private cursorIndex: number = 0 // Index within the current node
   private size: number = 0
+  private operationCount: number = 0
+  private lastOperation: string = ''
 
   constructor(initialText: string = '') {
     if (initialText) {
@@ -164,6 +193,7 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
       this.cursorNode.insertCharAt(char, this.cursorIndex)
       this.cursorIndex++
       this.size++
+      this.addOperation(`Inserted '${char}'`)
     } else {
       // Current node is full, need to split or create new node
       if (this.cursorIndex === this.cursorNode.getLength()) {
@@ -185,6 +215,7 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
         this.cursorNode = newNode
         this.cursorIndex = 1
         this.size++
+        this.addOperation(`Inserted '${char}' (new node)`)
       } else {
         // Need to split the current node
         const newNode = this.createNode()
@@ -227,6 +258,7 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     if (deletedChar) {
       this.cursorIndex--
       this.size--
+      this.addOperation('Deleted character')
       
       // If node becomes empty and it's not the only node, remove it
       if (this.cursorNode.isEmpty() && this.head !== this.tail) {
@@ -271,6 +303,7 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     const deletedChar = this.cursorNode.deleteCharAt(this.cursorIndex)
     if (deletedChar) {
       this.size--
+      this.addOperation('Deleted character to the right')
       
       // If node becomes empty and it's not the only node, remove it
       if (this.cursorNode.isEmpty() && this.head !== this.tail) {
@@ -304,18 +337,22 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
   moveLeft(): void {
     if (this.cursorIndex > 0) {
       this.cursorIndex--
+      this.addOperation('Moved cursor left')
     } else if (this.cursorNode && this.cursorNode.prev) {
       this.cursorNode = this.cursorNode.prev
       this.cursorIndex = this.cursorNode.getLength()
+      this.addOperation('Moved cursor left (to previous node)')
     }
   }
 
   moveRight(): void {
     if (this.cursorNode && this.cursorIndex < this.cursorNode.getLength()) {
       this.cursorIndex++
+      this.addOperation('Moved cursor right')
     } else if (this.cursorNode && this.cursorNode.next) {
       this.cursorNode = this.cursorNode.next
       this.cursorIndex = 0
+      this.addOperation('Moved cursor right (to next node)')
     }
   }
 
@@ -394,6 +431,26 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     this.cursorNode = null
     this.cursorIndex = 0
     this.size = 0
+    this.operationCount++
+    this.lastOperation = 'Cleared all text'
+  }
+
+  getOperationCount(): number {
+    return this.operationCount
+  }
+
+  getLastOperation(): string {
+    return this.lastOperation
+  }
+
+  resetOperationTracking(): void {
+    this.operationCount = 0
+    this.lastOperation = ''
+  }
+
+  private addOperation(description: string): void {
+    this.operationCount++
+    this.lastOperation = description
   }
 }
 
@@ -403,6 +460,8 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
   private afterGap: string[] = []
   private gapSize: number = 10
   private gapUsed: number = 0 // How much of the gap has been used
+  private operationCount: number = 0
+  private lastOperation: string = ''
 
   constructor(initialText: string = '') {
     this.beforeGap = initialText.split('')
@@ -410,7 +469,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
   }
 
   private expandGap(): void {
-    const newGapSize = this.gapSize * 2
+    const newGapSize = this.gapSize * 1
     const newAfterGap = new Array(newGapSize)
     
     // Copy existing afterGap to new larger gap
@@ -432,12 +491,14 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     // Insert the character into the gap
     this.beforeGap.push(char)
     this.gapUsed++
+    this.addOperation(`Inserted '${char}'`)
   }
 
   delete(): void {
     if (this.beforeGap.length > 0) {
       this.beforeGap.pop()
       this.gapUsed--
+      this.addOperation('Deleted character')
     }
   }
 
@@ -451,6 +512,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     if (charIndex < this.afterGap.length) {
       // Remove the character from afterGap
       this.afterGap.splice(charIndex, 1)
+      this.addOperation('Deleted character to the right')
     }
   }
 
@@ -459,6 +521,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
       const char = this.beforeGap.pop()!
       this.afterGap.unshift(char)
       // Moving left doesn't change gap usage - we're just moving the gap
+      this.addOperation('Moved cursor left')
     }
   }
 
@@ -475,6 +538,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
       this.afterGap.splice(charIndex, 1)
       this.beforeGap.push(char)
       // Moving right doesn't change gap usage - we're just moving the gap
+      this.addOperation('Moved cursor right')
     }
   }
 
@@ -533,5 +597,25 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     this.beforeGap = []
     this.afterGap = []
     this.gapUsed = 0
+    this.operationCount++
+    this.lastOperation = 'Cleared all text'
+  }
+
+  getOperationCount(): number {
+    return this.operationCount
+  }
+
+  getLastOperation(): string {
+    return this.lastOperation
+  }
+
+  resetOperationTracking(): void {
+    this.operationCount = 0
+    this.lastOperation = ''
+  }
+
+  private addOperation(description: string): void {
+    this.operationCount++
+    this.lastOperation = description
   }
 } 

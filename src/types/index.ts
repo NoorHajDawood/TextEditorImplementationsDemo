@@ -12,6 +12,9 @@ export interface ITextEditor {
   getCursor(): number
   getOperations(): string[]
   clear(): void
+  getOperationCount(): number
+  getLastOperation(): string
+  resetOperationTracking(): void
 }
 
 // Extended interface for editors that track memory usage
