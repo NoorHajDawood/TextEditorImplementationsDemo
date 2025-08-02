@@ -5,6 +5,7 @@ export type EditorType = 'introduction' | 'array' | 'linkedlist' | 'gapbuffer'
 export interface ITextEditor {
   insert(char: string): void
   delete(): void
+  deleteRight(): void
   moveLeft(): void
   moveRight(): void
   getText(): string

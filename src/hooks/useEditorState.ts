@@ -194,6 +194,33 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     setIsAnimating(false)
   }, [editor, updateDisplay])
 
+  const animateArrayDeletionRight = useCallback(async () => {
+    setIsAnimating(true)
+    setOperationType('delete')
+    
+    const currentContent = editor.getText()
+    const currentCursor = editor.getCursor()
+    
+    if (currentCursor < currentContent.length) {
+      // Show the shifting animation from right to left
+      for (let i = currentContent.length - 1; i >= currentCursor; i--) {
+        setShiftingIndex(i)
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      
+      editor.deleteRight()
+      setShiftingIndex(null)
+      setOperationType(null)
+      
+      updateDisplay('Deleted character to the right (with shifting)')
+    } else {
+      setOperationType(null)
+      updateDisplay('Cannot delete at end')
+    }
+    
+    setIsAnimating(false)
+  }, [editor, updateDisplay])
+
   const handleInsert = useCallback(() => {
     if (inputValue && !isAnimating) {
       if (type === 'array') {
@@ -237,6 +264,17 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     }
   }, [isAnimating, type, editor, updateDisplay, animateArrayDeletion])
 
+  const handleDeleteRight = useCallback(() => {
+    if (!isAnimating) {
+      if (type === 'array') {
+        animateArrayDeletionRight()
+      } else {
+        editor.deleteRight()
+        updateDisplay('Deleted character to the right')
+      }
+    }
+  }, [isAnimating, type, editor, updateDisplay, animateArrayDeletionRight])
+
   const handleMoveLeft = useCallback(() => {
     editor.moveLeft()
     updateDisplay('Moved cursor left')
@@ -277,6 +315,12 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       } else if (!isAnimating) {
         handleDelete()
       }
+    } else if (e.key === 'Delete') {
+      if (type === 'array' && !isAnimating) {
+        animateArrayDeletionRight()
+      } else if (!isAnimating) {
+        handleDeleteRight()
+      }
     } else if (e.key === 'ArrowLeft') {
       handleMoveLeft()
     } else if (e.key === 'ArrowRight') {
@@ -308,7 +352,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
         updateDisplay(`Inserted '${e.key}'`)
       }
     }
-  }, [type, isAnimating, handleInsert, handleDelete, handleMoveLeft, handleMoveRight, editor, updateDisplay, animateArrayInsertion, animateArrayDeletion, animateGapBufferInsertion])
+  }, [type, isAnimating, handleInsert, handleDelete, handleDeleteRight, handleMoveLeft, handleMoveRight, editor, updateDisplay, animateArrayInsertion, animateArrayDeletion, animateArrayDeletionRight, animateGapBufferInsertion])
 
   return {
     // State
@@ -328,6 +372,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     // Handlers
     handleInsert,
     handleDelete,
+    handleDeleteRight,
     handleMoveLeft,
     handleMoveRight,
     handleClearText,

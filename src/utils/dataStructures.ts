@@ -21,6 +21,12 @@ export class ArrayBasedEditor implements ITextEditor {
     }
   }
 
+  deleteRight(): void {
+    if (this.cursor < this.content.length) {
+      this.content.splice(this.cursor, 1)
+    }
+  }
+
   moveLeft(): void {
     if (this.cursor > 0) {
       this.cursor--
@@ -251,6 +257,50 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     }
   }
 
+  deleteRight(): void {
+    if (!this.cursorNode || this.cursorIndex >= this.cursorNode.getLength()) {
+      // Try to move to next node
+      if (this.cursorNode && this.cursorNode.next) {
+        this.cursorNode = this.cursorNode.next
+        this.cursorIndex = 0
+        this.deleteRight()
+      }
+      return
+    }
+
+    const deletedChar = this.cursorNode.deleteCharAt(this.cursorIndex)
+    if (deletedChar) {
+      this.size--
+      
+      // If node becomes empty and it's not the only node, remove it
+      if (this.cursorNode.isEmpty() && this.head !== this.tail) {
+        if (this.cursorNode.prev) {
+          this.cursorNode.prev.next = this.cursorNode.next
+        } else {
+          this.head = this.cursorNode.next
+        }
+        
+        if (this.cursorNode.next) {
+          this.cursorNode.next.prev = this.cursorNode.prev
+        } else {
+          this.tail = this.cursorNode.prev
+        }
+        
+        // Move cursor to next node
+        if (this.cursorNode.next) {
+          this.cursorNode = this.cursorNode.next
+          this.cursorIndex = 0
+        } else if (this.cursorNode.prev) {
+          this.cursorNode = this.cursorNode.prev
+          this.cursorIndex = this.cursorNode.getLength()
+        } else {
+          this.cursorNode = null
+          this.cursorIndex = 0
+        }
+      }
+    }
+  }
+
   moveLeft(): void {
     if (this.cursorIndex > 0) {
       this.cursorIndex--
@@ -388,6 +438,19 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     if (this.beforeGap.length > 0) {
       this.beforeGap.pop()
       this.gapUsed--
+    }
+  }
+
+  deleteRight(): void {
+    // Find the first non-undefined character in afterGap
+    let charIndex = 0
+    while (charIndex < this.afterGap.length && this.afterGap[charIndex] === undefined) {
+      charIndex++
+    }
+    
+    if (charIndex < this.afterGap.length) {
+      // Remove the character from afterGap
+      this.afterGap.splice(charIndex, 1)
     }
   }
 
