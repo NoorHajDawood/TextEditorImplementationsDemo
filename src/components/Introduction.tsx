@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { ImplementationSummaries } from './ImplementationSummaries'
 
 export const Introduction: React.FC = () => {
   const [revealedCards, setRevealedCards] = useState<Set<string>>(new Set())
+  const [showSummaries, setShowSummaries] = useState(false)
 
   const handleCardClick = (cardId: string) => {
     setRevealedCards(prev => new Set([...prev, cardId]))
@@ -96,7 +98,19 @@ export const Introduction: React.FC = () => {
             Click on any of the tabs above to start exploring! Each implementation will show you 
             different aspects of how data structures work in practice.
           </p>
+          <button 
+            className="view-summaries-btn"
+            onClick={() => setShowSummaries(!showSummaries)}
+          >
+            {showSummaries ? 'Hide' : 'View'} Implementation Summaries
+          </button>
         </div>
+
+        {showSummaries && (
+          <div className="intro-section">
+            <ImplementationSummaries />
+          </div>
+        )}
       </div>
     </div>
   )
