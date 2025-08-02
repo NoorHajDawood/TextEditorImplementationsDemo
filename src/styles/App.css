@@ -233,23 +233,59 @@ body {
   animation: pulse 0.5s infinite;
 }
 
-/* Linked list separator */
-.char:contains('|') {
-  background: #e6fffa;
+/* Linked list pointer */
+.char[data-pointer="true"] {
+  background: linear-gradient(45deg, #e6fffa, #b2f5ea);
   color: #38b2ac;
   border: 2px solid #38b2ac;
   font-weight: bold;
-  margin: 0 8px;
+  margin: 0 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: relative;
+  animation: pointerPulse 2s infinite;
 }
 
-/* Gap buffer arrow */
-.char:contains('→') {
-  background: #fed7d7;
-  color: #c53030;
-  border: 2px solid #c53030;
+.char[data-pointer="true"]::after {
+  content: "ptr";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  background: #38b2ac;
+  color: white;
+  padding: 1px 3px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+@keyframes pointerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Linked list node styling */
+.char[data-node="true"] {
+  background: linear-gradient(45deg, #f0fff4, #c6f6d5);
+  border: 2px solid #48bb78;
+  color: #22543d;
   font-weight: bold;
-  margin-left: 8px;
-  animation: pulse 1.5s infinite;
+  position: relative;
+}
+
+.char[data-node="true"]::before {
+  content: "node";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.5rem;
+  background: #48bb78;
+  color: white;
+  padding: 1px 3px;
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
 @keyframes pulse {

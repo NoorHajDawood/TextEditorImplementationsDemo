@@ -17,10 +17,10 @@ export const ImplementationDetails: React.FC<ImplementationDetailsProps> = ({ ty
         }
       case 'linkedlist':
         return {
-          dataStructure: 'Doubly linked list with pointers',
-          insertDelete: 'O(1) - pointer manipulation',
-          cursorMovement: 'O(1) - follow pointers',
-          memory: 'Higher overhead due to pointers'
+          dataStructure: 'Doubly linked list with node pointers',
+          insertDelete: 'O(1) - just update next/prev pointers',
+          cursorMovement: 'O(1) - traverse via pointers',
+          memory: 'Higher overhead: char + next + prev pointers'
         }
       case 'gapbuffer':
         return {

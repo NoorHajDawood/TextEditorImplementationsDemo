@@ -175,17 +175,27 @@ export class LinkedListEditor implements IMemoryTrackedEditor {
     let current = this.head
     
     while (current) {
+      // Add the character (with cursor highlighting)
       if (current === this.cursor) {
         result.push(`[${current.char}]`)
       } else {
         result.push(current.char)
       }
+      
+      // Add pointer to next node (if not the last node)
+      if (current.next) {
+        result.push('→')
+      }
+      
       current = current.next
     }
     
-    // Add visual separator to show no shifting
-    if (result.length > 0) {
-      result.push('|') // Visual separator
+    // Add empty array indices to show the full structure
+    const totalLength = result.length
+    const maxLength = Math.max(totalLength, 100) // Show 100 slots like array
+    
+    for (let i = totalLength; i < maxLength; i++) {
+      result.push('_') // Empty array slot
     }
     
     return result
@@ -251,7 +261,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     if (this.beforeGap.length > 0) {
       const char = this.beforeGap.pop()!
       this.afterGap.unshift(char)
-      this.gapUsed--
+      // Moving left doesn't change gap usage - we're just moving the gap
     }
   }
 
@@ -267,7 +277,7 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
       // Remove the character from afterGap
       this.afterGap.splice(charIndex, 1)
       this.beforeGap.push(char)
-      this.gapUsed++
+      // Moving right doesn't change gap usage - we're just moving the gap
     }
   }
 

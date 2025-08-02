@@ -35,6 +35,8 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
              data-empty={op === '_' ? 'true' : 'false'}
              data-separator={op === '|' ? 'true' : 'false'}
              data-arrow={op === '→' ? 'true' : 'false'}
+             data-pointer={type === 'linkedlist' && op === '→' ? 'true' : 'false'}
+             data-node={type === 'linkedlist' && op && !op.startsWith('[') && op !== '_' && op !== '→' ? 'true' : 'false'}
              data-shifting={shiftingIndex === index ? 'true' : 'false'}
              data-operation={operationType}
            >
@@ -56,11 +58,18 @@ export const TextDisplay: React.FC<TextDisplayProps> = ({
         </div>
       )}
       
-      {type === 'linkedlist' && (
-        <div className="linkedlist-indicator">
-          <small>Linked List: No shifting! Characters are connected by pointers (|).</small>
-        </div>
-      )}
+             {type === 'linkedlist' && (
+         <div className="linkedlist-indicator">
+           <small>
+             Linked List: Characters are connected by pointers (→). 
+             {shiftingIndex !== null ? (
+               <span className="animating-text"> No shifting needed - just update pointers!</span>
+             ) : (
+               ' Insertions/deletions only update pointers, no character shifting.'
+             )}
+           </small>
+         </div>
+       )}
       
                     {type === 'gapbuffer' && (
           <div className="gapbuffer-indicator">
