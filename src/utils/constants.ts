@@ -2,6 +2,11 @@ import type { TabConfig } from '../types'
 
 export const TAB_CONFIG: TabConfig[] = [
   {
+    id: 'introduction',
+    title: 'Introduction',
+    description: 'Welcome to the Text Editor Data Structure Demo! Learn how different data structures handle text editing operations.'
+  },
+  {
     id: 'array',
     title: 'Array-Based Editor',
     description: 'Simple array implementation where insertions and deletions require shifting elements. O(n) time complexity for insertions/deletions in the middle.'

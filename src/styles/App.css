@@ -112,6 +112,166 @@ body {
   opacity: 0;
 }
 
+/* Introduction styles */
+.introduction {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.introduction-content h2 {
+  color: #4a5568;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2rem;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 15px;
+}
+
+.intro-section {
+  margin-bottom: 30px;
+}
+
+.intro-section h3 {
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  border-left: 4px solid #667eea;
+  padding-left: 15px;
+}
+
+.intro-section p {
+  color: #4a5568;
+  line-height: 1.7;
+  margin-bottom: 15px;
+}
+
+.intro-section ul, .intro-section ol {
+  color: #4a5568;
+  line-height: 1.7;
+  padding-left: 20px;
+}
+
+.intro-section li {
+  margin-bottom: 8px;
+}
+
+.intro-section strong {
+  color: #2d3748;
+}
+
+.implementation-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.preview-card {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+/* Blurred card state */
+.preview-card.blurred {
+  filter: blur(8px);
+  opacity: 0.3;
+  background: #cbd5e0;
+  border-color: #a0aec0;
+  transform: scale(0.95);
+}
+
+.preview-card.blurred:hover {
+  filter: blur(4px);
+  opacity: 0.6;
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.preview-card.blurred::before {
+  content: "Click to reveal";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.preview-card.blurred:hover::before {
+  opacity: 1;
+}
+
+/* Revealed card state */
+.preview-card.revealed {
+  filter: none;
+  opacity: 1;
+  background: #f7fafc;
+  border-color: #667eea;
+  animation: revealCard 0.5s ease-out;
+}
+
+@keyframes revealCard {
+  0% {
+    filter: blur(8px);
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+  100% {
+    filter: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.preview-card h4 {
+  color: #2d3748;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.preview-card p {
+  color: #4a5568;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.complexity {
+  background: #667eea;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  display: inline-block;
+}
+
 .tab-content {
   padding: 25px;
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrayBasedEditor, LinkedListEditor, GapBufferEditor } from './utils/dataStructures'
 import { EditorDemo } from './components/EditorDemo'
 import { TabNavigation } from './components/TabNavigation'
+import { Introduction } from './components/Introduction'
 import { TAB_CONFIG } from './utils/constants'
 import type { EditorType } from './types'
 import './styles/App.css'
@@ -13,7 +14,7 @@ function App() {
   const [gapBufferEditor] = useState(() => new GapBufferEditor(''))
   
   // Tab state
-  const [activeTab, setActiveTab] = useState<EditorType>('array')
+  const [activeTab, setActiveTab] = useState<EditorType>('introduction')
   
   // Text state for each implementation
   const [arrayText, setArrayText] = useState('')
@@ -23,6 +24,7 @@ function App() {
   // Get the appropriate editor instance
   const getEditor = (type: EditorType) => {
     switch (type) {
+      case 'introduction': return null
       case 'array': return arrayEditor
       case 'linkedlist': return linkedListEditor
       case 'gapbuffer': return gapBufferEditor
@@ -32,6 +34,7 @@ function App() {
   // Get the appropriate text state and setter
   const getTextState = (type: EditorType) => {
     switch (type) {
+      case 'introduction': return ''
       case 'array': return arrayText
       case 'linkedlist': return linkedListText
       case 'gapbuffer': return gapBufferText
@@ -40,6 +43,7 @@ function App() {
 
   const getTextSetter = (type: EditorType) => {
     switch (type) {
+      case 'introduction': return () => {}
       case 'array': return setArrayText
       case 'linkedlist': return setLinkedListText
       case 'gapbuffer': return setGapBufferText
@@ -62,14 +66,18 @@ function App() {
           />
           
           <div className="tab-content">
-            <EditorDemo
-              title={TAB_CONFIG.find(tab => tab.id === activeTab)?.title || ''}
-              description={TAB_CONFIG.find(tab => tab.id === activeTab)?.description || ''}
-              editor={getEditor(activeTab)}
-              type={activeTab}
-              textState={getTextState(activeTab)}
-              setTextState={getTextSetter(activeTab)}
-            />
+            {activeTab === 'introduction' ? (
+              <Introduction />
+            ) : (
+              <EditorDemo
+                title={TAB_CONFIG.find(tab => tab.id === activeTab)?.title || ''}
+                description={TAB_CONFIG.find(tab => tab.id === activeTab)?.description || ''}
+                editor={getEditor(activeTab)!}
+                type={activeTab}
+                textState={getTextState(activeTab)}
+                setTextState={getTextSetter(activeTab)}
+              />
+            )}
           </div>
         </div>
       </main>

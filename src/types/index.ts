@@ -1,5 +1,5 @@
 // Core editor types
-export type EditorType = 'array' | 'linkedlist' | 'gapbuffer'
+export type EditorType = 'introduction' | 'array' | 'linkedlist' | 'gapbuffer'
 
 // Base editor interface that all implementations must follow
 export interface ITextEditor {
