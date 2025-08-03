@@ -10,14 +10,14 @@ COPY package*.json ./
 # Install all dependencies (including devDependencies for TypeScript)
 RUN npm ci
 
-# Copy source code
+# Copy source code (including index.html and version.txt)
 COPY . .
-
-# Copy version file to ensure rebuilds
-COPY version.txt ./version.txt
 
 # Build the application
 RUN npm run build
+
+# Verify the title is correct in the built index.html
+RUN grep -q "Text Editor Data Structures Demo" dist/index.html || (echo "Title not found in built index.html" && exit 1)
 
 # Install serve to run the built app
 RUN npm install -g serve

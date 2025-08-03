@@ -1,3 +1,4 @@
-Build Date: 2024-12-19-2
-Version: 1.0.1
-Title: Text Editor Data Structures Demo 
+Build Date: 2024-12-19-3
+Version: 1.0.2
+Title: Text Editor Data Structures Demo
+Updated: Title fix attempt 
