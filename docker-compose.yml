@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  text-editor-demo:
+    build: .
+    ports:
+      - "19001:3000"
+    container_name: text-editor-demo
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production 
