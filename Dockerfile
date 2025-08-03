@@ -1,6 +1,9 @@
 # Use Node.js 18 Alpine as base image for smaller size
 FROM node:18-alpine
 
+# Add build argument to force rebuild when needed
+ARG BUILD_DATE
+
 # Set working directory
 WORKDIR /app
 
@@ -12,6 +15,9 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Copy version file to ensure rebuilds
+COPY version.txt ./version.txt
 
 # Build the application
 RUN npm run build
