@@ -13,7 +13,8 @@ RUN npm ci
 # Copy source code (including index.html and version.txt)
 COPY . .
 
-# Build the application
+# Build the application with polling enabled
+ENV CHOKIDAR_USEPOLLING=true
 RUN npm run build
 
 # Verify the title is correct in the built index.html

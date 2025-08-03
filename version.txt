@@ -1,4 +1,4 @@
-Build Date: 2024-12-19-3
-Version: 1.0.2
+Build Date: 2024-12-19-4
+Version: 1.0.3
 Title: Text Editor Data Structures Demo
-Updated: Title fix attempt 
+Updated: Added Vite polling configuration 
