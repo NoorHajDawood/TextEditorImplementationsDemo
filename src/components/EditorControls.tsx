@@ -13,13 +13,7 @@ interface EditorControlsProps {
 }
 
 export const EditorControls: React.FC<EditorControlsProps> = ({
-  inputValue,
-  setInputValue,
   isAnimating,
-  onInsert,
-  onDelete,
-  onMoveLeft,
-  onMoveRight,
   onClear,
   onInsertPreset
 }) => {

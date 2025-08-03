@@ -41,7 +41,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     setDetailedOperations(prev => [...prev, newOperation])
   }, [])
 
-  const updateDisplay = useCallback((operation?: string) => {
+  const updateDisplay = useCallback(() => {
     const currentText = editor.getText()
     setTextState(currentText)
     setCursor(editor.getCursor())

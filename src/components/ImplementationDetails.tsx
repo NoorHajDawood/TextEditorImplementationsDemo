@@ -38,10 +38,10 @@ export const ImplementationDetails: React.FC<ImplementationDetailsProps> = ({ ty
     <div className="implementation-details">
       <h4>Implementation Details:</h4>
       <div className="detail-content">
-        <p><strong>Data Structure:</strong> {details.dataStructure}</p>
-        <p><strong>Insert/Delete:</strong> {details.insertDelete}</p>
-        <p><strong>Cursor Movement:</strong> {details.cursorMovement}</p>
-        <p><strong>Memory:</strong> {details.memory}</p>
+        <p><strong>Data Structure:</strong> {details?.dataStructure}</p>
+        <p><strong>Insert/Delete:</strong> {details?.insertDelete}</p>
+        <p><strong>Cursor Movement:</strong> {details?.cursorMovement}</p>
+        <p><strong>Memory:</strong> {details?.memory}</p>
       </div>
     </div>
   )

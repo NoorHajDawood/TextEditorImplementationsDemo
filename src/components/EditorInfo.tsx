@@ -38,7 +38,7 @@ export const EditorInfo: React.FC<EditorInfoProps> = ({
   }
 
   const getPerformanceMetrics = () => {
-    const { charCount } = getTextStats()
+    // const { charCount } = getTextStats() // Unused variable removed
     let insertComplexity = 'O(1)'
     let deleteComplexity = 'O(1)'
     let moveComplexity = 'O(1)'
@@ -105,7 +105,7 @@ export const EditorInfo: React.FC<EditorInfoProps> = ({
         const pointerOverhead = nodeCount * 2 // next + prev pointers
         return `Characters: ${text.length} | Nodes: ${nodeCount} | Pointers: ${pointerOverhead} | Total: ${memoryUsage} units`
       case 'gapbuffer':
-        const gapOverhead = gapSize || 10
+        // const gapOverhead = gapSize || 10 // Unused variable removed
         const actualChars = text.length
         return `Characters: ${actualChars} | Gap: ${gapSize || 10} | Used: ${gapUsed || 0} | Total: ${memoryUsage} units`
       default:

@@ -22,7 +22,6 @@ export const ImplementationSummary: React.FC<ImplementationSummaryProps> = ({
   type,
   title,
   description,
-  gifUrl,
   complexity,
   pros,
   cons,
