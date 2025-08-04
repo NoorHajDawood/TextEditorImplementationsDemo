@@ -1323,4 +1323,76 @@ button:disabled:hover {
   .complexity-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Gap Buffer Controls */
+.gap-buffer-controls {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.gap-buffer-controls .control-group {
+  margin-bottom: 15px;
+}
+
+.gap-buffer-controls label {
+  display: block;
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.gap-buffer-controls .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.gap-buffer-controls .expansion-factor-input {
+  width: 100px;
+  padding: 8px 12px;
+  border: 2px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.gap-buffer-controls .expansion-factor-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.gap-buffer-controls .expansion-factor-input:disabled {
+  background: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.gap-buffer-controls .input-help {
+  color: #718096;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.gap-buffer-controls .factor-info {
+  background: #edf2f7;
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.gap-buffer-controls .factor-info small {
+  color: #4a5568;
+  line-height: 1.4;
+}
+
+.gap-buffer-controls .factor-info strong {
+  color: #2d3748;
 } 

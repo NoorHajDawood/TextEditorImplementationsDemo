@@ -18,6 +18,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
   const [operationType, setOperationType] = useState<'insert' | 'delete' | null>(null)
   const [gapSize, setGapSize] = useState<number>(10)
   const [gapUsed, setGapUsed] = useState<number>(0)
+  const [expansionFactor, setExpansionFactor] = useState<number>(2)
   
   // Enhanced operation tracking
   const [detailedOperations, setDetailedOperations] = useState<Array<{
@@ -60,6 +61,7 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
       const gapInfo = (editor as any).getGapInfo()
       setGapSize(gapInfo.gapSize)
       setGapUsed(gapInfo.gapUsed)
+      setExpansionFactor(gapInfo.expansionFactor || 2)
     }
   }, [editor, setTextState])
 
@@ -512,6 +514,19 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     }
   }, [type, isAnimating, handleInsert, handleDelete, handleDeleteRight, handleMoveLeft, handleMoveRight, editor, updateDisplay, animateArrayInsertion, animateArrayDeletion, animateArrayDeletionRight, animateGapBufferInsertion, addOperation])
 
+  const handleExpansionFactorChange = useCallback((factor: number) => {
+    if (type === 'gapbuffer' && typeof (editor as any).setExpansionFactor === 'function') {
+      (editor as any).setExpansionFactor(factor)
+      setExpansionFactor(factor)
+      addOperation({
+        type: 'preset',
+        description: `Changed expansion factor to ${factor}x`,
+        characterCount: 0,
+        shiftCount: 0
+      })
+    }
+  }, [type, editor, addOperation])
+
   return {
     // State
     cursor,
@@ -543,6 +558,8 @@ export const useEditorState = ({ editor, type, setTextState }: UseEditorStatePro
     
     // Gap buffer specific
     gapSize,
-    gapUsed
+    gapUsed,
+    expansionFactor,
+    handleExpansionFactorChange
   }
 } 

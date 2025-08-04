@@ -1,4 +1,4 @@
-Build Date: 2024-12-19-4
-Version: 1.0.3
+Build Date: 2024-12-19-5
+Version: 1.0.4
 Title: Text Editor Data Structures Demo
-Updated: Added Vite polling configuration 
+Updated: Added gap buffer expansion factor control 

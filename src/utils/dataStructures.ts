@@ -462,14 +462,23 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
   private gapUsed: number = 0 // How much of the gap has been used
   private operationCount: number = 0
   private lastOperation: string = ''
+  private expansionFactor: number = 2 // Default multiplication factor
 
   constructor(initialText: string = '') {
     this.beforeGap = initialText.split('')
     this.afterGap = []
   }
 
+  setExpansionFactor(factor: number): void {
+    this.expansionFactor = Math.max(1, factor) // Ensure factor is at least 1
+  }
+
+  getExpansionFactor(): number {
+    return this.expansionFactor
+  }
+
   private expandGap(): void {
-    const newGapSize = this.gapSize * 1
+    const newGapSize = this.gapSize * this.expansionFactor
     const newAfterGap = new Array(newGapSize)
     
     // Copy existing afterGap to new larger gap
@@ -589,8 +598,8 @@ export class GapBufferEditor implements IMemoryTrackedEditor {
     return this.beforeGap.length + afterGapUsed + this.gapSize
   }
 
-  getGapInfo(): { gapSize: number; gapUsed: number } {
-    return { gapSize: this.gapSize, gapUsed: this.gapUsed }
+  getGapInfo(): { gapSize: number; gapUsed: number; expansionFactor: number } {
+    return { gapSize: this.gapSize, gapUsed: this.gapUsed, expansionFactor: this.expansionFactor }
   }
 
   clear(): void {

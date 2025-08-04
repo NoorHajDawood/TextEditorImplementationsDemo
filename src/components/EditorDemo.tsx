@@ -3,6 +3,7 @@ import type { ITextEditor, EditorType } from '../types'
 import { useEditorState } from '../hooks/useEditorState'
 import { TextDisplay } from './TextDisplay'
 import { EditorControls } from './EditorControls'
+import { GapBufferControls } from './GapBufferControls'
 import { EditorInfo } from './EditorInfo'
 import { ImplementationDetails } from './ImplementationDetails'
 
@@ -35,6 +36,7 @@ export const EditorDemo: React.FC<EditorDemoProps> = ({
     operationType,
     gapSize,
     gapUsed,
+    expansionFactor,
     detailedOperations,
     setInputValue,
     handleInsert,
@@ -43,6 +45,7 @@ export const EditorDemo: React.FC<EditorDemoProps> = ({
     handleMoveRight,
     handleClearText,
     handleInsertPreset,
+    handleExpansionFactorChange,
     handleKeyPress,
     updateDisplay
   } = useEditorState({ editor, type, textState, setTextState })
@@ -80,6 +83,14 @@ export const EditorDemo: React.FC<EditorDemoProps> = ({
           onClear={handleClearText}
           onInsertPreset={handleInsertPreset}
         />
+        
+        {type === 'gapbuffer' && (
+          <GapBufferControls
+            expansionFactor={expansionFactor}
+            onExpansionFactorChange={handleExpansionFactorChange}
+            isAnimating={isAnimating}
+          />
+        )}
         
         <EditorInfo
           text={textState}
