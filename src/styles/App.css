@@ -610,10 +610,16 @@ body {
   font-size: 1rem;
   transition: border-color 0.3s ease;
   outline: none;
+  color: #333;
+  background: white;
 }
 
 .input-group input:focus {
   border-color: #667eea;
+}
+
+.input-group input::placeholder {
+  color: #a0aec0;
 }
 
 .button-group {

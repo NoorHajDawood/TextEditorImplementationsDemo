@@ -13,12 +13,50 @@ interface EditorControlsProps {
 }
 
 export const EditorControls: React.FC<EditorControlsProps> = ({
+  inputValue,
+  setInputValue,
   isAnimating,
+  onInsert,
+  onDelete,
+  onMoveLeft,
+  onMoveRight,
   onClear,
   onInsertPreset
 }) => {
   return (
     <>
+      <div className="controls">
+        <div className="input-group">
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Type a character..."
+            disabled={isAnimating}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                onInsert()
+              }
+            }}
+          />
+          <button onClick={onInsert} disabled={isAnimating || !inputValue}>
+            Insert
+          </button>
+        </div>
+        
+        <div className="button-group">
+          <button onClick={onMoveLeft} disabled={isAnimating}>
+            ←
+          </button>
+          <button onClick={onDelete} disabled={isAnimating}>
+            Delete
+          </button>
+          <button onClick={onMoveRight} disabled={isAnimating}>
+            →
+          </button>
+        </div>
+      </div>
+      
       <div className="utility-buttons">
         <button onClick={onClear} disabled={isAnimating} className="clear-button">
           {isAnimating ? 'Animating...' : 'Clear Text'}
